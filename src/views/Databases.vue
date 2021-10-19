@@ -48,7 +48,7 @@
               {{ logs.length }}
             </observe>
             <td class="buttons">
-              <button class="button">Delete</button>
+              <button class="button" @click="() => deleteDatabase(database)">Delete</button>
             </td>
           </tr>
         </tbody>
@@ -61,12 +61,34 @@
 </template>
 
 <script>
+import ConfirmDialog from "@/components/ConfirmDialog.vue"
+import overlayModel from "@/components/utils/overlayModel.js"
 import CreateDatabase from "./segments/CreateDatabase.vue"
+
 export default {
   name: "Databases",
   components: { CreateDatabase },
+  inject: ["workingZone"],
   reactive: {
     databases: ['database', 'databasesList']
+  },
+  methods: {
+    deleteDatabase(name) {
+      overlayModel.show({
+        component: ConfirmDialog,
+        props: {
+          title: `Delete database ${name}`,
+          text: `Do you really want to delete this database?`
+        },
+        on: {
+          yes: () => {
+            this.workingZone.addPromise(`delete database ${name}`,
+                api.request(["database", "deleteDatabase"], name )
+            )
+          }
+        }
+      })
+    }
   }
 }
 </script>
